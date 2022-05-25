@@ -4,117 +4,73 @@
 #include <string.h>
 #include <time.h>
 
-// int Suffix(FILE *input, char *text, char *substring)
-// {
-//     int text_length = FileLength(input);
-//     int substring_length = strlen(substring);
-//     int i = 0;
-//     int j = 0;
-
-//     for (i = 0; i < text_length; i++)
-//     {
-//         if (text[i] == substring[j]){
-//             j++;
-//             continue;
-//         }else{
-//             j = 0;
-//         }
-//         if (j == substring_length) return i;
-//     }
-
-//     puts("Have no prefix");
-//     return 0;
-// }
-
-// int Suffix(FILE *input, char *text, char *substring)
-// {
-//     if (feof(input)) return -1;
-
-//     int text_length = FileLength(input);
-//     int substring_length = strlen(substring);
-
-//     int i = ftell(input);
-//     int suffix = 0;
-
-//     while (i < text_length)
-//     {
-//         i = ftell(input);
-//         if (text[i] == substring[suffix]){
-//             ++suffix;
-//             if (suffix == substring_length) return suffix;
-//             continue;
-//         }else{
-//             return suffix;
-//         }
-//         fseek(input, 1, SEEK_CUR);
-//     }
-    
-//     //if (getchar(input) == EOF && suffix != 0) return -1; dont uncommment
-
-//     return suffix;
-// }
-
 typedef struct {
-    int *state_count;
-    int current_state;
-	char read_char; 
-	int next_state;
-    char *sample;
-} State;
+    unsigned char current;
+	signed char sym; // signed, для обозначения свободного перехода как -1.
+	unsigned char next;
+} State; 
 
-int Suffix(char *text, FILE *input, int *caret, char *sample)
-{
-    int file_length = FileLength(input);
-    int sample_length = strlen(sample);
-    int symb = 0;
-    for (; *caret < file_length; (*caret)++)
-    {
-        if ( !(text[*caret] == sample[symb]) || symb == sample_length){
-            (*caret)++;
-            return symb;
-        }
-        symb++;
-    }
-    return -1;
-}
 
-// //Finite-state machine
-// int FSM(FILE *input, char *sample)
+// int Suffix(char *text, FILE *input, int *caret, char *sample)
 // {
-//     char *text;
-//     text = FileTextInArray(input);
-
 //     int file_length = FileLength(input);
+//     int sample_length = strlen(sample);
+//     int symb = 0;
 
-//     State state;
-//     state.current_state = 0;
-//     state.sample = sample;
-
-//     int i = 0;
-//     int j = 0;
-//     for (; i < file_length; i++)
+//     for (; *caret < file_length; symb++)
 //     {
-//         if (text[i] == state.sample[j]){
-//             state.current_state = 1;
-//             ComputeTransition(state);
+//         (*caret)++;
+//         if (symb == sample_length) break;
+
+//         if (text[*caret - 1] == sample[symb]){
+//             continue;
+//         }else{
+//             break;
 //         }
-
 //     }
+//     return symb;
+
+//     // (*caret)++;
+//     //     if ( !(text[*caret] == sample[symb]) || symb == sample_length){
+//     //         return symb;
+//     //     }
+//     //     symb++;
 // }
 
-// CreateFSMSample(char *sample, State state)
-// {
-//     state.state_count = malloc(sizeof(int) * File);
-// }
-
-// ComputeTransition(State state)
-// {
-//     for ( i = 0; i < count; i++)
-//     {
-//         /* code */
-//     }
+//Finite-state machine
+int FSM(FILE *input, char *sample)
+{
+    char *text;
+    int caret;
+    text = FileTextInArray(input);
+    int file_length = FileLength(input);
     
-// }
+
+    State *finite_machine;
+    finite_machine = malloc(sizeof(*finite_machine) * strlen(sample));
+
+    for (int i = 0; i < strlen(sample); i++)
+    {
+        finite_machine[i].current = i;
+        finite_machine[i].sym = sample[i]; //здесь сделать свитч для шаблона
+        finite_machine[i].next = i + 1;
+    }
+
+    int current_state = 0;
+    while (caret < file_length)
+    {
+        if (current_state == strlen(sample) + 1) break; ////////////////////////////////////////////////////////////////сделать функцию подсветки текста
+
+        if (finite_machine[current_state].sym == text[caret]){
+            current_state = finite_machine[current_state].next;
+            caret++;
+            continue;
+        }else{
+            current_state = 0;
+        }
+        
+    }
+}
 
 int FileLength(FILE *input)
 {
