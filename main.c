@@ -55,45 +55,66 @@
 // }
 
 typedef struct {
+    int *state_count;
     int current_state;
 	char read_char; 
 	int next_state;
+    char *sample;
 } State;
 
-//Finite-state machine
-int FSM(FILE *input, char *sample)
+int Suffix(char *text, FILE *input, int *caret, char *sample)
 {
-    char *text;
-    text = FileTextInArray(input);
-
     int file_length = FileLength(input);
-
-    State state;
-    state.current_state = 0;
-
-
-
-    int i = 0;
-    int j = 0;
-    for (; i < file_length; i++)
+    int sample_length = strlen(sample);
+    int symb = 0;
+    for (; *caret < file_length; (*caret)++)
     {
-        if (text[i] == sample[j]){
-            j++;
-            state.current_state = 1;
-            StateTransition(state.current_state, text, i);    
-        }        
+        if ( !(text[*caret] == sample[symb]) || symb == sample_length){
+            (*caret)++;
+            return symb;
+        }
+        symb++;
     }
+    return -1;
 }
 
-int StateTransition(int current_state, char *text, int current_symbol)
-{
-    int j = 1;
-    for (; i < count; i++)
-    {
-        
-    }
+// //Finite-state machine
+// int FSM(FILE *input, char *sample)
+// {
+//     char *text;
+//     text = FileTextInArray(input);
+
+//     int file_length = FileLength(input);
+
+//     State state;
+//     state.current_state = 0;
+//     state.sample = sample;
+
+//     int i = 0;
+//     int j = 0;
+//     for (; i < file_length; i++)
+//     {
+//         if (text[i] == state.sample[j]){
+//             state.current_state = 1;
+//             ComputeTransition(state);
+//         }
+
+//     }
+// }
+
+// CreateFSMSample(char *sample, State state)
+// {
+//     state.state_count = malloc(sizeof(int) * File);
+// }
+
+// ComputeTransition(State state)
+// {
+//     for ( i = 0; i < count; i++)
+//     {
+//         /* code */
+//     }
     
-}
+// }
 
 int FileLength(FILE *input)
 {
@@ -116,6 +137,7 @@ char* FileTextInArray(FILE *input)
         ++i;
     }
 
+    fseek(input, 0 , SEEK_SET);
     return file_text;
 }
 
@@ -130,7 +152,7 @@ void generate_file()
     file = fopen("text.le", "w");
     int number;
     char c;
-    for (int i = 0; i < 1000000; i++)
+    for (int i = 0; i < 100; i++)
     {
         number = rand() % 2;
         c = number + 97;
@@ -141,25 +163,28 @@ void generate_file()
 
 int main()
 {
-    srand(time(NULL));
-    generate_file();
-    FILE *input, *suf_test;
-    char subsrting[] = "aaabab";
-    if ( (input = fopen("input.le", "r")) == NULL) return 0;
-    printf("Введите строку для поиска: ");
-
-    if ( (suf_test = fopen("input.le", "r")) == NULL) return 0;
+    //srand(time(NULL));
+    //generate_file();
+    FILE *input;
+    char sample[] = "aab";
+    if ( (input = fopen("text.le", "r")) == NULL) return 0;
 
     char *file_text = NULL;
     int file_length = FileLength(input);
-     = FileTextInArray(input);
+    file_text = FileTextInArray(input);
+
     
     // ПРОТЕСТИРУЙ ФУНКЦИЮ СУФФИКС
-    // АВТОМАТЫ ЧЕРЕЗ СВИТЧ КАЙС
+    // АВТОМАТЫ ЧЕРЕЗ СВИТЧ
     // ШАБЛОНЫ: ПЕРЕХОД ЕСЛИ ЕСТЬ СИМВОЛ ЕСТЬ В МАССИВЕ ШАБЛОНА
     
-    while(1){
-        Suffix(suf_test, );
+    int caret = 0;
+    int result = 0;
+    int i = 1;
+    while(caret < file_length){
+        result = Suffix(file_text, input, &caret, sample);
+        printf("%d. %d\n", i, result);
+        ++i;
     }
 
     FileFree(file_text);
