@@ -7,11 +7,9 @@
  
 int getNextState(char *sample, int substr_len, int state, int x)
 {
-    // If the character c is same as next character
-    // in sampletern,then simply increment state
-    if (state < substr_len && x == sample[state])
+    if (state < substr_len && x == sample[state]){
         return state+1;
- 
+    }
     // ns stores the result which is next state
     int next_state, i;
  
@@ -25,9 +23,10 @@ int getNextState(char *sample, int substr_len, int state, int x)
     {
         if (sample[next_state-1] == x)
         {
-            for (i = 0; i < next_state-1; i++)
+            for (i = 0; i < next_state-1; i++){
                 if (sample[i] != sample[state-next_state+1+i])
                     break;
+            }
             if (i == next_state-1)
                 return next_state;
         }
@@ -35,7 +34,18 @@ int getNextState(char *sample, int substr_len, int state, int x)
  
     return 0;
 }
- 
+
+void PrintTable(int **TF, int substr) //not work
+{
+    for (int i = 0; i < substr + 1; i++){
+        for (int j = 0; j < NO_OF_CHARS; j++){
+            printf("%d ", TF[i][j]);
+        }
+        puts("");
+    }
+    puts("");
+}
+
 /* This function builds the TF table which represents4
     Finite Automata for a given pattern */
 void computeTF(char *sample, int substr_len, int **TF)
@@ -53,17 +63,18 @@ void FiniteAutomationMatcher(char *sample, char *txt)
     int N = strlen(txt);
  
     //int TF[M+1][NO_OF_CHARS];
-    int **TF;
+    int **TF = NULL;
     TF = (int**)malloc(sizeof(int*) * (substr_len + 1) );
     for (int i = 0; i < NO_OF_CHARS; i++)
     {
-        TF[i] = (int*)malloc(sizeof(NO_OF_CHARS) * sizeof(int));
+        TF[i] = (int*)malloc(NO_OF_CHARS * sizeof(int));
     }
 
     computeTF(sample, substr_len, TF);
+    PrintTable(TF, substr_len);
  
     // Process txt over FA.
-    int i, state=0;
+    int i, state = 0;
     for (i = 0; i < N; i++)
     {
         state = TF[state][(int)txt[i]];
@@ -71,11 +82,10 @@ void FiniteAutomationMatcher(char *sample, char *txt)
             printf ("\n Pattern found at index %d", i-substr_len+1);
     }
 }
- 
 // Driver program to test above function
 int main()
 {
-    char *txt = "AABAACAADAABAAABAA";
+    char *txt = "dsadsaCAADAABAAABAA";
     char *sample = "AABA";
     FiniteAutomationMatcher(sample, txt);
     return 0;
