@@ -1,165 +1,103 @@
-#include <stdio.h>
-#include <stdint.h>
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
+// C program for Finite Automata Pattern searching
+// Algorithm
+#include<stdio.h>
+#include<string.h>
+#include<stdlib.h>
+#define CHAR_BORD 256
 
-typedef struct {
-    unsigned char current;
-	signed char sym; // signed, для обозначения свободного перехода как -1.
-	unsigned char next;
-} State; 
-
-
-// int Suffix(char *text, FILE *input, int *caret, char *sample)
-// {
-//     int file_length = FileLength(input);
-//     int sample_length = strlen(sample);
-//     int symb = 0;
-
-//     for (; *caret < file_length; symb++)
-//     {
-//         (*caret)++;
-//         if (symb == sample_length) break;
-
-//         if (text[*caret - 1] == sample[symb]){
-//             continue;
-//         }else{
-//             break;
-//         }
-//     }
-//     return symb;
-
-//     // (*caret)++;
-//     //     if ( !(text[*caret] == sample[symb]) || symb == sample_length){
-//     //         return symb;
-//     //     }
-//     //     symb++;
-// }
-
-//Finite-state machine
-int FSM(FILE *input, char *sample)
+//функция перехода
+int getNextState(char *sample, int substr_len, int state, int x)
 {
-    char *text;
-    int caret;
-    text = FileTextInArray(input);
-    int file_length = FileLength(input);
-    
-
-    State *finite_machine;
-    finite_machine = malloc(sizeof(*finite_machine) * strlen(sample));
-
-    for (int i = 0; i < strlen(sample); i++)
-    {
-        finite_machine[i].current = i;
-        finite_machine[i].sym = sample[i]; //здесь сделать свитч для шаблона
-        finite_machine[i].next = i + 1;
+    if (state < substr_len && x == sample[state]){
+        return state+1;
     }
-
-    int current_state = 0;
-    while (caret < file_length)
+    // ns stores the result which is next state
+    int next_state, i;
+ 
+    // ns finally contains the longest prefix
+    // which is also suffix in "pat[0..state-1]c"
+ 
+    // Start from the largest possible value
+    // and stop when you find a prefix which
+    // is also suffix
+    for (next_state = state; next_state > 0; next_state--)
     {
-        if (current_state == strlen(sample) + 1) break; ////////////////////////////////////////////////////////////////сделать функцию подсветки текста
-
-        if (finite_machine[current_state].sym == text[caret]){
-            current_state = finite_machine[current_state].next;
-            caret++;
-            continue;
-        }else{
-            current_state = 0;
+        if (sample[next_state-1] == x)
+        {
+            for (i = 0; i < next_state-1; i++){
+                if (sample[i] != sample[state-next_state+1+i])
+                    break;
+            }
+            if (i == next_state-1)
+                return next_state;
         }
-        
     }
+ 
+    return 0;
 }
 
-//finite inpite alphabet
-char FI_alph()
+void PrintTable(int **TF, int substr) //not work
 {
-    
-}
-
-int FileLength(FILE *input)
-{
-    fseek(input, 0, SEEK_END);
-    int file_length = ftell(input);
-    fseek(input, 0, SEEK_SET);
-    return file_length;
-}
-
-char* FileTextInArray(FILE *input)
-{
-    int file_length = FileLength(input);
-    char *file_text = malloc(file_length);
-    if (file_text == NULL) exit(1);
-
-    int i = 0;
-    char ch;
-    while ( (ch = fgetc(input) ) != EOF){
-        file_text[i] = ch;
-        ++i;
+    for (int i = 0; i < substr + 1; i++){
+        for (int j = 0; j < CHAR_BORD; j++){
+            printf("%d ", TF[i][j]);
+        }
+        puts("");
     }
-
-    fseek(input, 0 , SEEK_SET);
-    return file_text;
+    puts("");
 }
 
-void FileFree(char *file_text)
+//строит таблицу переходов
+void ComputeTF(char *sample, int substr_len, int **TF)
 {
-    free(file_text);
+    int state, x;
+    for (state = 0; state <= substr_len; ++state){
+        for (x = 0; x < CHAR_BORD; ++x){
+            TF[state][x] = getNextState(sample, substr_len, state, x);
+        }
+    }
+    PrintTable(TF, substr_len);
 }
 
-void generate_file()
+void FreeMemory(int **TF, int substr_len)
 {
-    FILE *file;
-    file = fopen("text.le", "w");
-    int number;
-    char c;
-    for (int i = 0; i < 100; i++)
+    for (int i = 0; i < substr_len; i++)
     {
-        number = rand() % 2;
-        c = number + 97;
-        fprintf(file, "%c", c);
+        free(TF[i]);
     }
-    fclose(file);
+    free(TF);
 }
-
-Compute_transition(char *sample, char input_symbol)
+ 
+void FiniteAutomationMatcher(char *sample, char *txt)
 {
-    ;
+    int substr_len = strlen(sample);
+    int N = strlen(txt);
+ 
+    //массив указателей для FSM таблицы
+    int **TF = NULL;
+    TF = (int**)malloc(sizeof(int*) * (substr_len + 1) );
+    for (int i = 0; i < CHAR_BORD; i++)
+    {
+        TF[i] = (int*)malloc(CHAR_BORD * sizeof(int));
+    }
+
+    ComputeTF(sample, substr_len, TF);
+
+    int i, state = 0;
+    for (i = 0; i < N; i++)
+    {
+        state = TF[state][(int)txt[i]];
+        if (state == substr_len)
+            printf ("\n Pattern found at index %d", i-substr_len+1);
+    }
+    FreeMemory(TF, substr_len);
 }
 
-Suffix_function(char *sample, )
-{
-
-}
 
 int main()
 {
-    //srand(time(NULL));
-    //generate_file();
-    FILE *input;
-    char sample[] = "aab";
-    if ( (input = fopen("text.le", "r")) == NULL) return 0;
-
-    char *file_text = NULL;
-    int file_length = FileLength(input);
-    file_text = FileTextInArray(input);
-
-    
-    // ПРОТЕСТИРУЙ ФУНКЦИЮ СУФФИКС
-    // АВТОМАТЫ ЧЕРЕЗ СВИТЧ
-    // ШАБЛОНЫ: ПЕРЕХОД ЕСЛИ ЕСТЬ СИМВОЛ ЕСТЬ В МАССИВЕ ШАБЛОНА
-    
-    int caret = 0;
-    int result = 0;
-    int i = 1;
-    while(caret < file_length){
-        result = Suffix(file_text, input, &caret, sample);
-        printf("%d. %d\n", i, result);
-        ++i;
-    }
-
-    FileFree(file_text);
-    fclose(input);
-    puts("Okay");
+    char *txt = "dsadsaCAADAABAAABAA";
+    char *sample = "AABA";
+    FiniteAutomationMatcher(sample, txt);
+    return 0;
 }
