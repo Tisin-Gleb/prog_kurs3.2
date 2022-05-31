@@ -1,13 +1,21 @@
-// C program for Finite Automata Pattern searching
-// Algorithm
+#define CHAR_BORD 256
 #include<stdio.h>
 #include<string.h>
 #include<stdlib.h>
 #include"FSM.h"
-#define CHAR_BORD 256
+#include <sys/types.h>
+#include <dirent.h>
+#include<stdint.h>
+
+DIR *opendir(const char *name);
+int closedir(DIR *dirp);
+struct dirent *readdir(DIR *dirp);
+
+
+
 
 //функция перехода
-int getNextState(char *sample, int *substr_len, int state, int x)
+int getNextState(char *sample, int substr_len, int state, int x)
 {
     //case '*':'/', '\\'
     // switch(x){
@@ -50,10 +58,10 @@ int getNextState(char *sample, int *substr_len, int state, int x)
     return 0;
 }
 
-void PrintTable(int **TF, int substr)
+void printTable(int **TF, int substr)
 {
     for (int i = 0; i < substr + 1; i++){
-        for (int j = 0; j < CHAR_BORD; j++){
+        for (int j = 0; j < CHAR_BORD - 140; j++){
             printf("%d ", TF[i][j]);
         }
         puts("");
@@ -62,27 +70,27 @@ void PrintTable(int **TF, int substr)
 }
 
 //строит таблицу переходов
-void ComputeTF(char *sample, int substr_len, int **TF)
+void computeTF(char *sample, int substr_len, int **TF)
 {
     int state, x;
     for (state = 0; state <= substr_len; ++state){
         for (x = 0; x < CHAR_BORD; ++x){
-            TF[state][x] = getNextState(sample, &substr_len, state, x);
+            TF[state][x] = getNextState(sample, substr_len, state, x);
         }
     }
-    PrintTable(TF, substr_len);
+    printTable(TF, substr_len);
 }
 
-void FreeMemory(int **TF)
+void freeMemory(int **TF)
 {
-    for (int i = 0; i < CHAR_BORD; i++)
-    {
-        free(TF[i]);
-    }
+    // for (int i = 0; i < CHAR_BORD; i++)
+    // {
+    //     free(TF[i]);
+    // }
     free(TF);
 }
  
-void FiniteAutomationMatcher(char *sample, char *txt)
+void finiteAutomationMatcher(char *sample, char *txt)
 {
     int substr_len = strlen(sample);
     int N = strlen(txt);
@@ -95,7 +103,7 @@ void FiniteAutomationMatcher(char *sample, char *txt)
         TF[i] = (int*)malloc(CHAR_BORD * sizeof(int));
     }
 
-    ComputeTF(sample, substr_len, TF);
+    computeTF(sample, substr_len, TF);
 
     int i, state = 0;
     for (i = 0; i < N; i++)
@@ -105,14 +113,43 @@ void FiniteAutomationMatcher(char *sample, char *txt)
             printf ("\n Pattern found at index %d", i-substr_len+1);
     }
 
-    FreeMemory(TF);
+    freeMemory(TF);
 }
+
+void listdir(char *name, uint8_t key) //мб готово
+{
+    DIR *dir; //как файл
+    struct dirent *entry; //Съела объект в файловой системе - файл/папка
+    
+    if (!(dir = opendir(name))) //пососи рекурсия
+        return;
+
+    while ((entry = readdir(dir)) != NULL) { // readdir(dir) последовательно файлы в директории считывает
+        if (entry->d_type == DT_DIR) {
+            char path[260];
+            if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0)
+                continue;
+            sprintf(path, "%s/%s", name, entry->d_name); //папка  
+            if (key == 1) {
+                listdir(path, key); //только папки
+            }
+        } else { // всё удали нахуй
+        //зашёл в файл накткнулся
+        //пишу что можно сделат ь с файлами
+        }
+    }
+    closedir(dir);
+}
+
 
 
 int main(int argc, char *argvc[])
 {
+    int key = 0;
+    
+
     char *txt = "dsadsaCAADAABAAABAA";
     char *sample = "AABA";
-    FiniteAutomationMatcher(sample, txt);
+    finiteAutomationMatcher(sample, txt);
     return 0;
 }
