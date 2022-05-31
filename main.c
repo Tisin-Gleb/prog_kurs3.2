@@ -1,181 +1,165 @@
-#define CHAR_BORD 256
-#include<stdio.h>
-#include<string.h>
-#include<stdlib.h>
-#include"FSM.h"
-#include <sys/types.h>
-#include <dirent.h>
-#include<stdint.h>
+#include <stdio.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
 
-DIR *opendir(const char *name);
-int closedir(DIR *dirp);
-struct dirent *readdir(DIR *dirp);
-
+typedef struct {
+    unsigned char current;
+	signed char sym; // signed, для обозначения свободного перехода как -1.
+	unsigned char next;
+} State; 
 
 
+// int Suffix(char *text, FILE *input, int *caret, char *sample)
+// {
+//     int file_length = FileLength(input);
+//     int sample_length = strlen(sample);
+//     int symb = 0;
 
-//функция перехода
-int getNextState(char *sample, int substr_len, int state, int x)
+//     for (; *caret < file_length; symb++)
+//     {
+//         (*caret)++;
+//         if (symb == sample_length) break;
+
+//         if (text[*caret - 1] == sample[symb]){
+//             continue;
+//         }else{
+//             break;
+//         }
+//     }
+//     return symb;
+
+//     // (*caret)++;
+//     //     if ( !(text[*caret] == sample[symb]) || symb == sample_length){
+//     //         return symb;
+//     //     }
+//     //     symb++;
+// }
+
+//Finite-state machine
+int FSM(FILE *input, char *sample)
 {
-    //case '*':'/', '\\'
-    // switch(x){
-    //     case '\\':
-    //         ;
-    //     case '.':
-    //         return state+1;
-    //     case '*':
-    //         int i = 0;
-    //         while (1){
-    //             if (sample[state+1] == x){
-    //                 return state + 1;
-    //             }else{
-    //                 i++;
-    //                 state++;
-    //             }
-    //         }
-            
-
-    // }
-        
-    if (state < substr_len && x == sample[state]){
-        return state+1;
-    }
-    int next_state, i;
- 
-    for (next_state = state; next_state > 0; next_state--)
-    {
-        if (sample[next_state-1] == x)
-        {
-            for (i = 0; i < next_state-1; i++){
-                if (sample[i] != sample[state-next_state+1+i])
-                    break;
-            }
-            if (i == next_state-1)
-                return next_state;
-        }
-    }
- 
-    return 0;
-}
-
-void printTable(int **TF, int substr)
-{
-    for (int i = 0; i < substr + 1; i++){
-        for (int j = 0; j < CHAR_BORD - 140; j++){
-            printf("%d ", TF[i][j]);
-        }
-        puts("");
-    }
-    puts("");
-}
-
-//строит таблицу переходов
-void computeTF(char *sample, int substr_len, int **TF)
-{
-    int state, x;
-    for (state = 0; state <= substr_len; ++state){
-        for (x = 0; x < CHAR_BORD; ++x){
-            TF[state][x] = getNextState(sample, substr_len, state, x);
-        }
-    }
-    printTable(TF, substr_len);
-}
-
-void freeMemory(int **TF)
-{
-    // for (int i = 0; i < CHAR_BORD; i++)
-    // {
-    //     free(TF[i]);
-    // }
-    free(TF);
-}
- 
-void finiteAutomationMatcher(char *sample, char *txt)
-{
-    int substr_len = strlen(sample);
-    int N = strlen(txt);
- 
-    //массив указателей для FSM таблицы
-    int **TF = NULL;
-    TF = (int**)malloc((substr_len + 1) * sizeof(int*) );
-    for (int i = 0; i < CHAR_BORD; i++)
-    {
-        TF[i] = (int*)malloc(CHAR_BORD * sizeof(int));
-    }
-
-    computeTF(sample, substr_len, TF);
-
-    int i, state = 0;
-    for (i = 0; i < N; i++)
-    {
-        state = TF[state][(int)txt[i]];
-        if (state == substr_len)
-            printf ("\n Pattern found at index %d", i-substr_len+1);
-    }
-
-    freeMemory(TF);
-}
-
-void listdir(char *name, uint8_t key) //мб готово
-{
-    DIR *dir; //как файл
-    struct dirent *entry; //Съела объект в файловой системе - файл/папка
+    char *text;
+    int caret;
+    text = FileTextInArray(input);
+    int file_length = FileLength(input);
     
-    if (!(dir = opendir(name))) //пососи рекурсия
-        return;
 
-    while ((entry = readdir(dir)) != NULL) { // readdir(dir) последовательно файлы в директории считывает
-        if (entry->d_type == DT_DIR) {
-            char path[260];
-            if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0)
-                continue;
-            sprintf(path, "%s/%s", name, entry->d_name); //папка  
-            if (key == 1) {
-                listdir(path, key); //только папки
-            }
-        } else { // всё удали нахуй
-        //зашёл в файл накткнулся
-        //пишу что можно сделат ь с файлами
-        
-        }
+    State *finite_machine;
+    finite_machine = malloc(sizeof(*finite_machine) * strlen(sample));
+
+    for (int i = 0; i < strlen(sample); i++)
+    {
+        finite_machine[i].current = i;
+        finite_machine[i].sym = sample[i]; //здесь сделать свитч для шаблона
+        finite_machine[i].next = i + 1;
     }
-    closedir(dir);
-}
 
-void processMain(int argc, char *argvc[], int *key, char *sample, char *directory)
-{
-    int flag_sample = 0;
-    int flag_path = 0;
-    for (int i = 0; i < argc; i++){
-        if (strcmp(argvc[i], "-r") == 0 && *key == 0){
-            *key = 1;
-            continue;
-        }
+    int current_state = 0;
+    while (caret < file_length)
+    {
+        if (current_state == strlen(sample) + 1) break; ////////////////////////////////////////////////////////////////сделать функцию подсветки текста
 
-        if (flag_sample == 0){
-            sample = strcpy (sample, argvc[i]);
-            flag_sample = 1;
+        if (finite_machine[current_state].sym == text[caret]){
+            current_state = finite_machine[current_state].next;
+            caret++;
             continue;
+        }else{
+            current_state = 0;
         }
         
-        if (flag_path == 0){
-            directory = strcpy (directory, argvc[i]);
-            flag_path = 1;
-            break;
-        }
     }
 }
 
-
-int main(int argc, char *argvc[])
+//finite inpite alphabet
+char FI_alph()
 {
-    int key = 0;
-    char *sample;
-    char *directory;
-    processMain(argc, argvc, &key, sample, directory);
+    
+}
 
-    // char *txt = "dsadsaCAADAABAAABAA";
-    // char *sample = "AABA";
-    //finiteAutomationMatcher(sample, txt);
-    return 0;
+int FileLength(FILE *input)
+{
+    fseek(input, 0, SEEK_END);
+    int file_length = ftell(input);
+    fseek(input, 0, SEEK_SET);
+    return file_length;
+}
+
+char* FileTextInArray(FILE *input)
+{
+    int file_length = FileLength(input);
+    char *file_text = malloc(file_length);
+    if (file_text == NULL) exit(1);
+
+    int i = 0;
+    char ch;
+    while ( (ch = fgetc(input) ) != EOF){
+        file_text[i] = ch;
+        ++i;
+    }
+
+    fseek(input, 0 , SEEK_SET);
+    return file_text;
+}
+
+void FileFree(char *file_text)
+{
+    free(file_text);
+}
+
+void generate_file()
+{
+    FILE *file;
+    file = fopen("text.le", "w");
+    int number;
+    char c;
+    for (int i = 0; i < 100; i++)
+    {
+        number = rand() % 2;
+        c = number + 97;
+        fprintf(file, "%c", c);
+    }
+    fclose(file);
+}
+
+Compute_transition(char *sample, char input_symbol)
+{
+    ;
+}
+
+Suffix_function(char *sample, )
+{
+
+}
+
+int main()
+{
+    //srand(time(NULL));
+    //generate_file();
+    FILE *input;
+    char sample[] = "aab";
+    if ( (input = fopen("text.le", "r")) == NULL) return 0;
+
+    char *file_text = NULL;
+    int file_length = FileLength(input);
+    file_text = FileTextInArray(input);
+
+    
+    // ПРОТЕСТИРУЙ ФУНКЦИЮ СУФФИКС
+    // АВТОМАТЫ ЧЕРЕЗ СВИТЧ
+    // ШАБЛОНЫ: ПЕРЕХОД ЕСЛИ ЕСТЬ СИМВОЛ ЕСТЬ В МАССИВЕ ШАБЛОНА
+    
+    int caret = 0;
+    int result = 0;
+    int i = 1;
+    while(caret < file_length){
+        result = Suffix(file_text, input, &caret, sample);
+        printf("%d. %d\n", i, result);
+        ++i;
+    }
+
+    FileFree(file_text);
+    fclose(input);
+    puts("Okay");
 }
