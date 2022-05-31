@@ -141,12 +141,35 @@ void listdir(char *name, uint8_t key) //мб готово
     closedir(dir);
 }
 
+void processMain(int argc, char *argvc[], int *key, char *sample)
+{
+    int flag_sample = 0;
+    int flag_path = 0;
+    for (int i = 0; i < argc; i++){
+        if (strcmp(argvc[i], "-r" && *key == 0) == 0){
+            *key = 1;
+            continue;
+        }
+
+        if (flag_sample == 0){
+            strcpy (sample, argvc[i]);
+            flag_sample = 1;
+            continue;
+        }
+        
+        if (flag_path == 0){
+            strcpy (sample, argvc[i]);
+            flag_path = 1;
+            break;
+        }
+    }
+}
 
 
 int main(int argc, char *argvc[])
 {
     int key = 0;
-    
+    processMain(argc, argvc, &key);
 
     char *txt = "dsadsaCAADAABAAABAA";
     char *sample = "AABA";
