@@ -72,6 +72,12 @@ int FSM(FILE *input, char *sample)
     }
 }
 
+//finite inpite alphabet
+char FI_alph()
+{
+    
+}
+
 int FileLength(FILE *input)
 {
     fseek(input, 0, SEEK_END);
@@ -115,6 +121,16 @@ void generate_file()
         fprintf(file, "%c", c);
     }
     fclose(file);
+}
+
+Compute_transition(char *sample, char input_symbol)
+{
+    ;
+}
+
+Suffix_function(char *sample, )
+{
+
 }
 
 int main()
