@@ -3,23 +3,37 @@
 #include<stdio.h>
 #include<string.h>
 #include<stdlib.h>
+#include"FSM.h"
 #define CHAR_BORD 256
 
 //функция перехода
-int getNextState(char *sample, int substr_len, int state, int x)
+int getNextState(char *sample, int *substr_len, int state, int x)
 {
+    //case '*':'/', '\\'
+    // switch(x){
+    //     case '\\':
+    //         ;
+    //     case '.':
+    //         return state+1;
+    //     case '*':
+    //         int i = 0;
+    //         while (1){
+    //             if (sample[state+1] == x){
+    //                 return state + 1;
+    //             }else{
+    //                 i++;
+    //                 state++;
+    //             }
+    //         }
+            
+
+    // }
+        
     if (state < substr_len && x == sample[state]){
         return state+1;
     }
-    // ns stores the result which is next state
     int next_state, i;
  
-    // ns finally contains the longest prefix
-    // which is also suffix in "pat[0..state-1]c"
- 
-    // Start from the largest possible value
-    // and stop when you find a prefix which
-    // is also suffix
     for (next_state = state; next_state > 0; next_state--)
     {
         if (sample[next_state-1] == x)
@@ -36,7 +50,7 @@ int getNextState(char *sample, int substr_len, int state, int x)
     return 0;
 }
 
-void PrintTable(int **TF, int substr) //not work
+void PrintTable(int **TF, int substr)
 {
     for (int i = 0; i < substr + 1; i++){
         for (int j = 0; j < CHAR_BORD; j++){
@@ -53,15 +67,15 @@ void ComputeTF(char *sample, int substr_len, int **TF)
     int state, x;
     for (state = 0; state <= substr_len; ++state){
         for (x = 0; x < CHAR_BORD; ++x){
-            TF[state][x] = getNextState(sample, substr_len, state, x);
+            TF[state][x] = getNextState(sample, &substr_len, state, x);
         }
     }
     PrintTable(TF, substr_len);
 }
 
-void FreeMemory(int **TF, int substr_len)
+void FreeMemory(int **TF)
 {
-    for (int i = 0; i < substr_len; i++)
+    for (int i = 0; i < CHAR_BORD; i++)
     {
         free(TF[i]);
     }
@@ -75,7 +89,7 @@ void FiniteAutomationMatcher(char *sample, char *txt)
  
     //массив указателей для FSM таблицы
     int **TF = NULL;
-    TF = (int**)malloc(sizeof(int*) * (substr_len + 1) );
+    TF = (int**)malloc((substr_len + 1) * sizeof(int*) );
     for (int i = 0; i < CHAR_BORD; i++)
     {
         TF[i] = (int*)malloc(CHAR_BORD * sizeof(int));
@@ -90,11 +104,12 @@ void FiniteAutomationMatcher(char *sample, char *txt)
         if (state == substr_len)
             printf ("\n Pattern found at index %d", i-substr_len+1);
     }
-    FreeMemory(TF, substr_len);
+
+    FreeMemory(TF);
 }
 
 
-int main()
+int main(int argc, char *argvc[])
 {
     char *txt = "dsadsaCAADAABAAABAA";
     char *sample = "AABA";
