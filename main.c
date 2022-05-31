@@ -136,29 +136,30 @@ void listdir(char *name, uint8_t key) //мб готово
         } else { // всё удали нахуй
         //зашёл в файл накткнулся
         //пишу что можно сделат ь с файлами
+        
         }
     }
     closedir(dir);
 }
 
-void processMain(int argc, char *argvc[], int *key, char *sample)
+void processMain(int argc, char *argvc[], int *key, char *sample, char *directory)
 {
     int flag_sample = 0;
     int flag_path = 0;
     for (int i = 0; i < argc; i++){
-        if (strcmp(argvc[i], "-r" && *key == 0) == 0){
+        if (strcmp(argvc[i], "-r") == 0 && *key == 0){
             *key = 1;
             continue;
         }
 
         if (flag_sample == 0){
-            strcpy (sample, argvc[i]);
+            sample = strcpy (sample, argvc[i]);
             flag_sample = 1;
             continue;
         }
         
         if (flag_path == 0){
-            strcpy (sample, argvc[i]);
+            directory = strcpy (directory, argvc[i]);
             flag_path = 1;
             break;
         }
@@ -169,10 +170,12 @@ void processMain(int argc, char *argvc[], int *key, char *sample)
 int main(int argc, char *argvc[])
 {
     int key = 0;
-    processMain(argc, argvc, &key);
+    char *sample;
+    char *directory;
+    processMain(argc, argvc, &key, sample, directory);
 
-    char *txt = "dsadsaCAADAABAAABAA";
-    char *sample = "AABA";
-    finiteAutomationMatcher(sample, txt);
+    // char *txt = "dsadsaCAADAABAAABAA";
+    // char *sample = "AABA";
+    //finiteAutomationMatcher(sample, txt);
     return 0;
 }
