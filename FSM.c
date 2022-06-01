@@ -96,23 +96,28 @@ void finiteAutomationMatcher(char *sample, char *txt)
     computeTF(sample, substr_len, TF);
 
     int i, state = 0;
-    int cur_symb;
+    int hold_pref = 0;
     for (i = 0; i < N; i++)
     {
         state = TF[state][(int)txt[i]];
         if (state == substr_len){
+
+            for (; hold_pref - substr_len> 0 ; hold_pref--)
+            {
+                printf("%c", txt[i - hold_pref]);
+            }
+
             printf("%s%sm", CSI, colors[2]);
             for (int j = 0; j < substr_len; i++, j++)
             {
                 printf("%c", txt[i]);
             }
             printf("%s0m", CSI);
-            continue;
+        }else{
+            hold_pref++;
         }
-        printf("%c", txt[i]);
     }
     puts("");
-
     freeMemory(TF);
 }
 
@@ -146,22 +151,22 @@ void FileFree(char *file_text)
     free(file_text);
 }
 
-void listdir(char *name, uint8_t key, char *sample) //мб готово
+void listdir(char *name, uint8_t key, char *sample) 
 {
-    DIR *dir; //как файл
-    struct dirent *entry; //Съела объект в файловой системе - файл/папка
+    DIR *dir; 
+    struct dirent *entry; 
     
     if (!(dir = opendir(name)))
         return;
 
-    while ((entry = readdir(dir)) != NULL) { // readdir(dir) последовательно файлы в директории считывает
+    while ((entry = readdir(dir)) != NULL) { 
         if (entry->d_type == DT_DIR) {
             char path[260];
             if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0)
                 continue;
-            sprintf(path, "%s/%s", name, entry->d_name); //папка  
+            sprintf(path, "%s/%s", name, entry->d_name); 
             if (key == 1) {
-                listdir(path, key, sample); //только папки
+                listdir(path, key, sample); 
             }
         } else {
             FILE* input;
@@ -181,8 +186,6 @@ void listdir(char *name, uint8_t key, char *sample) //мб готово
 int main(int argc, char *argvc[])
 {
     int key = 0;
-    // char sample[64];
-    // char directory[260] = "0";
     char *sample;
     char *directory;
 
@@ -211,6 +214,9 @@ int main(int argc, char *argvc[])
 
     listdir(directory, key, sample);
     
+    free(sample);
+    free(directory);
+
     return 0;
 }
 
