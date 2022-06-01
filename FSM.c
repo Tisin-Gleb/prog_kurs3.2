@@ -11,32 +11,9 @@ DIR *opendir(const char *name);
 int closedir(DIR *dirp);
 struct dirent *readdir(DIR *dirp);
 
-
-
-
 //функция перехода
 int getNextState(char *sample, int substr_len, int state, int x)
-{
-    //case '*':'/', '\\'
-    // switch(x){
-    //     case '\\':
-    //         ;
-    //     case '.':
-    //         return state+1;
-    //     case '*':
-    //         int i = 0;
-    //         while (1){
-    //             if (sample[state+1] == x){
-    //                 return state + 1;
-    //             }else{
-    //                 i++;
-    //                 state++;
-    //             }
-    //         }
-            
-
-    // }
-        
+{ 
     if (state < substr_len && x == sample[state]){
         return state+1;
     }
@@ -83,10 +60,10 @@ void computeTF(char *sample, int substr_len, int **TF)
 
 void freeMemory(int **TF)
 {
-    // for (int i = 0; i < CHAR_BORD; i++)
-    // {
-    //     free(TF[i]);
-    // }
+    for (int i = 0; i < CHAR_BORD; i++)
+    {
+        free(TF[i]);
+    }
     free(TF);
 }
  
@@ -151,7 +128,7 @@ void listdir(char *name, uint8_t key, char *sample) //мб готово
     DIR *dir; //как файл
     struct dirent *entry; //Съела объект в файловой системе - файл/папка
     
-    if (!(dir = opendir(name))) //пососи рекурсия
+    if (!(dir = opendir(name)))
         return;
 
     while ((entry = readdir(dir)) != NULL) { // readdir(dir) последовательно файлы в директории считывает
@@ -167,11 +144,12 @@ void listdir(char *name, uint8_t key, char *sample) //мб готово
             FILE* input;
             char fullpath[400];
             sprintf(fullpath, "%s/%s", name, entry->d_name);
-            if ( (input = fopen(fullpath, "r") ) == NULL)
-                puts("aboba");
+            if ( (input = fopen(fullpath, "r") ) == NULL) 
+                puts("Нет файла");
             char *txt = FileTextInArray(input);
             finiteAutomationMatcher(sample, txt);
-        
+            fclose(input);
+            FileFree(txt);
         }
     }
     closedir(dir);
@@ -181,33 +159,36 @@ int main(int argc, char *argvc[])
 {
     int key = 0;
     // char sample[64];
-    // char directory[260];
+    // char directory[260] = "0";
+    char *sample;
+    char *directory;
+
     int flag_sample = 0;
     int flag_path = 0;
-    // for (int i = 2; i < argc;){
-    //     if (strcmp(argvc[i], "-r") == 0 && key == 0){
-    //         key = 1;
-    //         i++;
-    //     }
+    for (int i = 1; i < argc;){
+        if (strcmp(argvc[i], "-r") == 0 && key == 0){
+            key = 1;
+            i++;
+        }
 
-    //     if (flag_sample == 0){
-    //         strcpy (sample, argvc[i]);
-    //         flag_sample = 1;
-    //         i++;
-    //     }
+        if (flag_sample == 0){
+            sample = malloc(strlen(argvc[i]) + 1);
+            strcpy (sample, argvc[i]);
+            flag_sample = 1;
+            i++;
+        }
         
-    //     if (flag_path == 0){
-    //         strcpy (directory, argvc[i]);
-    //         flag_path = 1;
-    //         break;
-    //     }
-    // }
+        if (flag_path == 0){
+            directory = malloc(strlen(argvc[i]) + 1);
+            strcpy (directory, argvc[i]);
+            flag_path = 1;
+            break;
+        }
+    }
 
-    char *sample = "AABA";
-    char *directory = "/mnt/e/C_programms/texts";
     listdir(directory, key, sample);
     
     return 0;
 }
 
-//     ./true AABA /mnt/e/C_programms/texts
+//     ./true -r AABA /mnt/e/C_programms/texts
