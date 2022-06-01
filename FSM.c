@@ -96,7 +96,6 @@ void finiteAutomationMatcher(char *sample, char *txt)
     computeTF(sample, substr_len, TF);
 
     int i, state = 0;
-    int hold_pref = 0;
     char *txt_copy = malloc(N * sizeof(int));
     int k = 0;
     for (i = 0; i < N; i++)
