@@ -97,26 +97,37 @@ void finiteAutomationMatcher(char *sample, char *txt)
 
     int i, state = 0;
     int hold_pref = 0;
+    char *txt_copy = malloc(N * sizeof(int));
+    int k = 0;
     for (i = 0; i < N; i++)
     {
         state = TF[state][(int)txt[i]];
         if (state == substr_len){
-
-            for (; hold_pref - substr_len> 0 ; hold_pref--)
-            {
-                printf("%c", txt[i - hold_pref]);
-            }
-
-            printf("%s%sm", CSI, colors[2]);
-            for (int j = 0; j < substr_len; i++, j++)
-            {
-                printf("%c", txt[i]);
-            }
-            printf("%s0m", CSI);
-        }else{
-            hold_pref++;
+            txt_copy[k] = i-substr_len+1;
+            k++;
         }
     }
+
+    k = 0;
+    for (int i = 0; i < N; i++)
+    {
+        if (i == txt_copy[k]){
+            printf("%s%sm", CSI, colors[2]);
+            for (int j = 0; j < substr_len; j++)
+            {
+                printf("%c", txt[i]);
+                i++;
+            }
+            i--;
+            printf("%s0m", CSI);
+            k++;
+            continue;
+        }
+        
+        printf("%c", txt[i]);
+    }
+
+    free(txt_copy);
     puts("");
     freeMemory(TF);
 }
