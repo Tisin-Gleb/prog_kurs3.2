@@ -7,6 +7,19 @@
 #include <dirent.h>
 #include<stdint.h>
 
+#define CSI "\x1B\x5B"
+char colors[][5] = {
+    "0;30", /* Black */ "1;30", /* Dark Gray */
+    "0;31", /* Red */ "1;31", /* Bold Red */
+    "0;32", /* Green */ "1;32", /* Bold Green */
+    "0;33", /* Yellow */ "1;33", /* Bold Yellow */
+    "0;34", /* Blue */ "1;34",   /* Bold Blue */
+    "0;35", /* Purple */ "1;35", /* Bold Purple */
+    "0;36", /* Cyan */ "1;36" /*Bold Cyan */
+    };
+
+int colors_sz = sizeof(colors) / sizeof(colors[0]);
+
 DIR *opendir(const char *name);
 int closedir(DIR *dirp);
 struct dirent *readdir(DIR *dirp);
@@ -60,10 +73,10 @@ void computeTF(char *sample, int substr_len, int **TF)
 
 void freeMemory(int **TF)
 {
-    for (int i = 0; i < CHAR_BORD; i++)
-    {
-        free(TF[i]);
-    }
+    // for (int i = 0; i < CHAR_BORD; i++)
+    // {
+    //     free(TF[i]);
+    // }
     free(TF);
 }
  
@@ -83,12 +96,22 @@ void finiteAutomationMatcher(char *sample, char *txt)
     computeTF(sample, substr_len, TF);
 
     int i, state = 0;
+    int cur_symb;
     for (i = 0; i < N; i++)
     {
         state = TF[state][(int)txt[i]];
-        if (state == substr_len)
-            printf ("\n Pattern found at index %d", i-substr_len+1);
+        if (state == substr_len){
+            printf("%s%sm", CSI, colors[2]);
+            for (int j = 0; j < substr_len; i++, j++)
+            {
+                printf("%c", txt[i]);
+            }
+            printf("%s0m", CSI);
+            continue;
+        }
+        printf("%c", txt[i]);
     }
+    puts("");
 
     freeMemory(TF);
 }
